@@ -1,0 +1,7 @@
+---
+- hosts: available
+  become: true
+
+- include: control.yml
+- include: database.yml
+- include: webserver.yml

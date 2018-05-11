@@ -1,0 +1,44 @@
+---
+    - name: Setup empty database for WordPress
+      mysql_db:
+        name: "wordpress"
+        encoding: "utf8"
+        collation: "utf8_unicode_ci"
+        state: "present"
+        login_host: "192.168.135.121"
+        login_user: "demo"
+        login_password: "demo"
+        login_port: "3306"
+
+    - name: Download WordPress
+      get_url:
+        url: https://wordpress.org/latest.zip
+        dest: /vagrant/ansible
+
+    - name: Unzip WordPress
+      unarchive:
+        src: /vagrant/ansible/wordpress-4.9.5.zip
+        dest: /vagrant/ansible/
+
+    - name: Symlink web root to unzipped WordPress
+      file:
+        src: "/vagrant/ansible/wordpress"
+        dest: "/var/www/wordpress"
+        state: "link"
+
+    - name: Copy virtual host setup over
+      template:
+        src: "/vagrant/ansible/roles/wordpress/templates/vhost.conf"
+        dest: /etc/apache2/sites-available/
+
+    - name: Activate virtual host
+      command: a2ensite vhost
+
+    - name: Deactivate default vhost
+      command: a2dissite 000-default
+
+    - name: Ensure Apache is running
+      service:
+        name: apache2
+        state: restarted
+        enabled: yes
